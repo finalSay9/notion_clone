@@ -8,8 +8,8 @@ import { ConfigModule } from '@nestjs/config';
     ConfigModule.forRoot({
       // Makes ConfigService available everywhere without re-importing
       isGlobal: true,
-      envFilePath: '.env'
-    })
+      envFilePath: '.env',
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
