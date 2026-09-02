@@ -12,6 +12,13 @@ datasource db {
   provider = "postgresql"
 }
 
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
 enum UserRole {
   USER
   ADMIN
@@ -24,6 +31,22 @@ model User {
    role            Role      @default(USER)
    createdAt       DateTime  @default(now()) @map("created_at")
    updatedAt       DateTime  @updatedAt @map("updated_at")
+}
+
+
+model WorkspaceMember {
+  id              String        @id @default(uuid())
+  workspaceId     String
+  userId          String
+  role            WorkspaceRole @default(MEMBER)
+
+  createdAt       DateTime      @default(now())
+
+  workspace       Workspace @relation(fields: [workspaceId], references: [id])
+  user            User      @relation(fields: [userId], references: [id])
+
+  @@unique([workspaceId, userId])
+  @@index([userId])
 }
 
 
