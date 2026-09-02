@@ -12,7 +12,7 @@ datasource db {
   provider = "postgresql"
 }
 
-enum Role {
+enum UserRole {
   USER
   ADMIN
 }
