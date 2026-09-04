@@ -12,19 +12,6 @@ datasource db {
   provider = "postgresql"
 }
 
-enum DocumentRole {
-  VIEWER
-  COMMENTER
-  EDITOR
-  OWNER
-}
-
-
-enum WorkspaceRole {
-  OWNER
-  ADMIN
-  MEMBER
-}
 
 enum UserRole {
   USER
@@ -39,9 +26,7 @@ model User {
    createdAt       DateTime  @default(now()) @map("created_at")
    updatedAt       DateTime  @updatedAt @map("updated_at")
 
-   session         Session[]
-   document        Document[]
-   docmentPermission  DocumentPermission[]
+   sessions         Session[]
 }
 
 model Session {
@@ -60,101 +45,4 @@ model Session {
 
   @@index([userId])
   @@index([expiresAt])
-}
-
-
-model Document {
-  id          String   @id @default(uuid())
-  workspaceId String
-
-  title       String
-  createdById String
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  workspace Workspace @relation(fields: [workspaceId], references: [id])
-  creator   User      @relation(fields: [createdById], references: [id])
-
-  permissions DocumentPermission[]
-  versions    DocumentVersion[]
-  snapshots   DocumentSnapshot[]
-
-  @@index([workspaceId])
-  @@index([createdById])
-}
-
-
-model DocumentPermission {
-  id         String       @id @default(uuid())
-  documentId String
-  userId     String
-  role       DocumentRole
-
-  document Document @relation(fields: [documentId], references: [id])
-  user     User     @relation(fields: [userId], references: [id])
-
-  @@unique([documentId, userId])
-  @@index([userId])
-}
-
-
-model WorkspaceMember {
-  id              String        @id @default(uuid())
-  workspaceId     String
-  userId          String
-  role            WorkspaceRole @default(MEMBER)
-
-  createdAt       DateTime      @default(now())
-
-  workspace       Workspace @relation(fields: [workspaceId], references: [id])
-  user            User      @relation(fields: [userId], references: [id])
-
-  @@unique([workspaceId, userId])
-  @@index([userId])
-}
-
-
-model Workspace {
-  id             String     @id @default(uuid())
-  name           String
-  createdAt      DateTime   @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt
-
-  members        WorkspaceMember[]
-  documents      Document[]
-}
-
-
-model DocumentVersion {
-  id         String   @id @default(uuid())
-  documentId String
-  version    BigInt
-  createdById String
-
-  createdAt  DateTime @default(now())
-
-  document Document @relation(fields: [documentId], references: [id])
-
-  @@unique([documentId, version])
-  @@index([documentId, createdAt])
-}
-
-
-
-model Comment {
-  id         String   @id @default(uuid())
-  documentId String
-  authorId   String
-
-  content    String
-
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  document Document @relation(fields: [documentId], references: [id])
-  author   User     @relation(fields: [authorId], references: [id])
-
-  @@index([documentId])
-  @@index([authorId])
 }
