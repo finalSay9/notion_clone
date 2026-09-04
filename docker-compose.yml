@@ -31,21 +31,21 @@ services:
       timeout: 5s
       retries: 5
 
-  auth-service:
+  users-service:
     build:
-      context: ./services/auth-service
+      context: ./services/users-service
       dockerfile: Dockerfile
-    container_name: auth-service
+    container_name: users-service
     restart: unless-stopped
     depends_on:
       postgres-auth:
         condition: service_healthy
     env_file:
-      - ./services/auth-service/.env
+      - ./services/users-service/.env
     ports:
       - "3001:3001"
     volumes:
-      - ./services/auth-service:/app
+      - ./services/users-service:/app
       - /app/node_modules
 
   api-gateway:
@@ -55,7 +55,7 @@ services:
     container_name: api-gateway
     restart: unless-stopped
     depends_on:
-      - auth-service
+      - users-service
     env_file:
       - ./services/api-gateway/.env
     ports:
