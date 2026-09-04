@@ -117,3 +117,22 @@ model DocumentVersion {
   @@unique([documentId, version])
   @@index([documentId, createdAt])
 }
+
+
+
+model Comment {
+  id         String   @id @default(uuid())
+  documentId String
+  authorId   String
+
+  content    String
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  document Document @relation(fields: [documentId], references: [id])
+  author   User     @relation(fields: [authorId], references: [id])
+
+  @@index([documentId])
+  @@index([authorId])
+}
