@@ -63,6 +63,20 @@ model Document {
 }
 
 
+model DocumentPermission {
+  id         String       @id @default(uuid())
+  documentId String
+  userId     String
+  role       DocumentRole
+
+  document Document @relation(fields: [documentId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+
+  @@unique([documentId, userId])
+  @@index([userId])
+}
+
+
 model WorkspaceMember {
   id              String        @id @default(uuid())
   workspaceId     String
@@ -87,4 +101,19 @@ model WorkSpace {
 
   members        WorkspaceMember[]
   documents      Document[]
+}
+
+
+model DocumentVersion {
+  id         String   @id @default(uuid())
+  documentId String
+  version    BigInt
+  createdById String
+
+  createdAt  DateTime @default(now())
+
+  document Document @relation(fields: [documentId], references: [id])
+
+  @@unique([documentId, version])
+  @@index([documentId, createdAt])
 }
