@@ -12,6 +12,13 @@ datasource db {
   provider = "postgresql"
 }
 
+enum DocumentRole {
+  VIEWER
+  COMMENTER
+  EDITOR
+  OWNER
+}
+
 
 enum WorkspaceRole {
   OWNER
@@ -31,6 +38,28 @@ model User {
    role            Role      @default(USER)
    createdAt       DateTime  @default(now()) @map("created_at")
    updatedAt       DateTime  @updatedAt @map("updated_at")
+}
+
+
+model Document {
+  id          String   @id @default(uuid())
+  workspaceId String
+
+  title       String
+  createdById String
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
+  creator   User      @relation(fields: [createdById], references: [id])
+
+  permissions DocumentPermission[]
+  versions    DocumentVersion[]
+  snapshots   DocumentSnapshot[]
+
+  @@index([workspaceId])
+  @@index([createdById])
 }
 
 
