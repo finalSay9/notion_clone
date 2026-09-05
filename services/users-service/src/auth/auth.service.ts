@@ -25,6 +25,27 @@ export class AuthService {
          * the password,
          * damn so many options ahahahahah
          */
+    
+        const password_hash = await argon2.hash(dto.password)
+        //strip plain password before hitting the database
+        const { password, ...userfields} = dto
+
+        const user = await this.prisma.user.create({
+            data: {
+                ...userfields,
+                password_hash
+            },
+            select: {
+                id: true,
+                email: true,
+                createdAt: true
+            }
+        })
+
+        return {
+            message: "user created successfully",
+            data: user
+        }
 
     }
 }

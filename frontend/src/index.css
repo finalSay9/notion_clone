@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --color-paper: #faf8f3;
+  --color-paper-dim: #f2efe7;
+  --color-ink: #1a1d1e;
+  --color-ink-soft: #4a4d4f;
+  --color-indigo: #2b3a67;
+  --color-indigo-deep: #1e2a4d;
+
+  --color-cursor-coral: #e85d4c;
+  --color-cursor-green: #3e9c6f;
+  --color-cursor-amber: #d4a94a;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
+  ::selection {
+    background-color: var(--color-cursor-amber);
+    color: var(--color-ink);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-indigo);
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
