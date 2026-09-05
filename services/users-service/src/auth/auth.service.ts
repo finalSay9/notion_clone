@@ -1,6 +1,7 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import * as argon2 from 'argon2'
 
 @Injectable()
 export class AuthService {
@@ -18,5 +19,12 @@ export class AuthService {
         if(existingEmail){
             throw new ConflictException("this email already exist")
         }
+
+        /**
+         * so now what can i choose when hashing
+         * the password,
+         * damn so many options ahahahahah
+         */
+
     }
 }
