@@ -55,6 +55,23 @@ export class AuthService {
      * user
      */
     async login(loginDto: LoginDto){
+        const user = await this.prisma.user.findUnique({
+            where: {email: loginDto.email}
+        })
+
+        if(!user){
+            return null
+        }
+
+        /***
+         * now check the password
+         * and also compare plain
+         * and the hashed one
+         */
+        const checkPassword = await argon2.verify(loginDto.password, user.password_hash)
+        if(!checkPassword){
+            return null
+        }
 
     }
 }
