@@ -7,7 +7,20 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
 
-  imports: [],
+  imports: [
+    ConfigModule,
+    ConfigService,
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        secret: config.get<string>('JWT_SECRET'),
+        signOptions: {
+          expiresIn: (config.get<string>('JWT_EXPIRES_IN') ?? '7d') as any,
+        },
+      }),
+    })
+  ],
   
   controllers: [AuthController],
   providers: [AuthService, PrismaService]
