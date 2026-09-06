@@ -2,6 +2,7 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as argon2 from 'argon2'
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
@@ -46,6 +47,14 @@ export class AuthService {
             message: "user created successfully",
             data: user
         }
+
+    }
+
+    /**
+     * logging in a
+     * user
+     */
+    async login(loginDto: LoginDto){
 
     }
 }
