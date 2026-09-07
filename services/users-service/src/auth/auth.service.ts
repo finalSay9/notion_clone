@@ -1,77 +1,110 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import * as argon2 from 'argon2'
 import { LoginDto } from './dto/login.dto';
+import { JwtService } from '@nestjs/jwt';
+
+import * as argon2 from 'argon2';
+
+
 
 @Injectable()
 export class AuthService {
-    constructor(private prisma: PrismaService){}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+  ) {}
 
-    async createUser(dto: CreateUserDto){
-        /**
-         * checking if the email
-         * already exist in the system
-         */
-        const existingEmail  = await this.prisma.user.findUnique({
-            where:  {email: dto.email}
-        })
-        //if the email exist
-        if(existingEmail){
-            throw new ConflictException("this email already exist")
-        }
+  async createUser(dto: CreateUserDto) {
+    /**
+     * Check whether the email already exists.
+     */
+    const existingUser = await this.prisma.user.findUnique({
+      where: {
+        email: dto.email,
+      },
+    });
 
-        /**
-         * so now what can i choose when hashing
-         * the password,
-         * damn so many options ahahahahah
-         */
-    
-        const password_hash = await argon2.hash(dto.password)
-        //strip plain password before hitting the database
-        const { password, ...userfields} = dto
-
-        const user = await this.prisma.user.create({
-            data: {
-                ...userfields,
-                password_hash
-            },
-            select: {
-                id: true,
-                email: true,
-                createdAt: true
-            }
-        })
-
-        return {
-            message: "user created successfully",
-            data: user
-        }
-
+    if (existingUser) {
+      throw new ConflictException('This email already exists');
     }
 
     /**
-     * logging in a
-     * user
+     * Hash the plaintext password.
      */
-    async login(loginDto: LoginDto){
-        const user = await this.prisma.user.findUnique({
-            where: {email: loginDto.email}
-        })
+    const passwordHash = await argon2.hash(dto.password);
 
-        if(!user){
-            return null
-        }
+    /**
+     * Remove the plaintext password before
+     * sending data to Prisma.
+     */
+    const { password, ...userFields } = dto;
 
-        /***
-         * now check the password
-         * and also compare plain
-         * and the hashed one
-         */
-        const checkPassword = await argon2.verify(loginDto.password, user.password_hash)
-        if(!checkPassword){
-            return null
-        }
+    const user = await this.prisma.user.create({
+      data: {
+        ...userFields,
+        password_hash: passwordHash,
+      },
+      select: {
+        id: true,
+        email: true,
+        createdAt: true,
+      },
+    });
+    console.log('User created successfully:', user)
 
+    return {
+      message: 'User created successfully',
+      data: user,
+    };
+  }
+
+  async login(loginDto: LoginDto) {
+    /**
+     * Find the user by email.
+     */
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: loginDto.email,
+      },
+    });
+
+    /**
+     * Don't reveal whether the email exists.
+     */
+    if (!user) {
+      throw new UnauthorizedException('Invalid email or password');
     }
+
+    /**
+     * Compare the plaintext password against
+     * the stored Argon2 hash.
+     */
+    const passwordValid = await argon2.verify(
+      user.password_hash,
+      loginDto.password,
+    );
+
+    if (!passwordValid) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
+    /**
+     * Generate JWT.
+     */
+    const accessToken = this.jwtService.sign({
+      sub: user.id,
+      email: user.email,
+    });
+
+    return {
+      message: 'Login successful',
+      accessToken,
+    };
+  }
 }
