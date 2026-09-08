@@ -64,47 +64,42 @@ export class AuthService {
     };
   }
 
-  async login(loginDto: LoginDto) {
-    /**
-     * Find the user by email.
-     */
+  /**
+   * validating user
+   * method
+   */
+  async validateUser(loginDto: LoginDto): Promise<any> {
     const user = await this.prisma.user.findUnique({
-      where: {
-        email: loginDto.email,
-      },
-    });
-
-    /**
-     * Don't reveal whether the email exists.
-     */
-    if (!user) {
-      throw new UnauthorizedException('Invalid email or password');
+      where: {email: loginDto.email}
+    })
+    
+    if(!user) {
+      return null;
     }
 
+    //now checking he passord
+    const checkPassword = await argon2.verify(user.password_hash, loginDto.password);
     /**
-     * Compare the plaintext password against
-     * the stored Argon2 hash.
+     * if wrong credentials
+     * provided
      */
-    const passwordValid = await argon2.verify(
-      user.password_hash,
-      loginDto.password,
-    );
-
-    if (!passwordValid) {
-      throw new UnauthorizedException('Invalid email or password');
+    if(!checkPassword) {
+      return null;
     }
+  }
 
+
+
+
+  async login(user: any) {
+    
     /**
      * Generate JWT.
      */
-    const accessToken = this.jwtService.sign({
-      sub: user.id,
-      email: user.email,
-    });
+    const payload = {email: user.email, sub: user.id};
 
     return {
-      message: 'Login successful',
-      accessToken,
+      access_token: this.jwtService.sign(payload),
     };
   }
 }
