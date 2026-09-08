@@ -3,11 +3,12 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import type { SignOptions } from 'jsonwebtoken';
-
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PassportModule } from '@nestjs/passport';
+import { LocalStrategy } from './strategies/local.strategy';
+import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
   imports: [
@@ -33,6 +34,8 @@ import { PassportModule } from '@nestjs/passport';
   providers: [
     AuthService,
     PrismaService,
+    LocalStrategy,
+    JwtStrategy
   ],
 
   exports: [
