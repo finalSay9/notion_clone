@@ -68,9 +68,9 @@ export class AuthService {
    * validating user
    * method
    */
-  async validateUser(loginDto: LoginDto): Promise<any> {
+  async validateUser(email: string, pass: string): Promise<any> {
     const user = await this.prisma.user.findUnique({
-      where: {email: loginDto.email}
+      where: {email: email}
     })
     
     if(!user) {
@@ -78,7 +78,7 @@ export class AuthService {
     }
 
     //now checking he passord
-    const checkPassword = await argon2.verify(user.password_hash, loginDto.password);
+    const checkPassword = await argon2.verify(user.password_hash, pass);
     /**
      * if wrong credentials
      * provided
@@ -86,6 +86,9 @@ export class AuthService {
     if(!checkPassword) {
       return null;
     }
+    // RETURN THE USER OBJECT HERE
+  const { password_hash, ...result } = user;
+  return result;
   }
 
 

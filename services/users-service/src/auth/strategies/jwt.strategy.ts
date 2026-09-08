@@ -21,9 +21,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
      * only be executed
      * if signature and expiration all are checked
      */
-    async validate(loginDto: any) {
+    async validate(payload: {sub: string; email: string}) {
         //decoded payload becomes req.user
-        return {userId: loginDto.sub, username: loginDto.email }
+        return {userId: payload.sub, username: payload.email }
 
     }
 }
