@@ -101,8 +101,30 @@ export class AuthService {
      */
     const payload = {email: user.email, sub: user.id};
 
-    return {
-      access_token: this.jwtService.sign(payload),
-    };
+    return{
+      user: { id: user.id, email: user.email, role: user.role },
+      accessToken: this.jwtService.sign(payload),
+    }
+  }
+
+  /**
+   * Get current authenticated user profile by ID
+   */
+  async getCurrentUser(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        createdAt: true,
+        // Include any other non-sensitive fields you want to return
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User no longer exists');
+    }
+
+    return user;
   }
 }

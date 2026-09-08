@@ -23,9 +23,9 @@ export class AuthController {
     }
 
   @UseGuards(JwtAuthGuard)
-  @Get('profile')
-  getProfile(@Req() req) {
-    // req.user contains { userId: '...', email: '...' }
-    return req.user;
+  @Get('me') // Endpoint: GET /auth/me
+  async getCurrentUser(@Req() req) {
+    // req.user contains { userId: '...', email: '...' } from JwtStrategy
+    return this.authService.getCurrentUser(req.user.userId);
   }
 }
