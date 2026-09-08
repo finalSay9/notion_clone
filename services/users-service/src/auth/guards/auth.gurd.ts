@@ -12,6 +12,10 @@ export class AuthGuard implements CanActivate {
         return await this.validateRequest(request);
     }
 
+    /**
+     * creating a helper
+     * function
+     */
     private async validateRequest(request: any): Promise<boolean> {
         return true;
     }
