@@ -66,3 +66,39 @@ services:
 
 volumes:
   postgres_auth_data:
+
+
+  postgres-documents:
+    image: postgres:16-alpine
+    container_name: postgres-documents
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: documents_user
+      POSTGRES_PASSWORD: documents_pass
+      POSTGRES_DB: documents_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_documents_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U documents_user -d documents_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  documents-service:
+    build:
+      context: ./services/documents-service
+      dockerfile: Dockerfile
+    container_name: documents-service
+    restart: unless-stopped
+    depends_on:
+      postgres-documents:
+        condition: service_healthy
+    env_file:
+      - ./services/documents-service/.env
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./services/documents-service:/app
+      - /app/node_modules
