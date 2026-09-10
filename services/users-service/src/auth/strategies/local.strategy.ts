@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { Strategy } from "passport-local";
 import { AuthService } from "../auth.service";
-import { LoginDto } from "../dto/login.dto";
+ 
 
 
 @Injectable()
@@ -16,7 +16,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     }
 
     /**
-     * the validate method to be'
+     * the validate method to be
      * executed by the passport
      */
     async validate(email: string, pass: string): Promise<any> {
