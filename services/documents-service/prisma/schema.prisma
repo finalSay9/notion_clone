@@ -14,16 +14,17 @@ datasource db {
 
 model Document {
   id          String   @id @default(uuid())
-  workspaceId String
+
   createdById String
+  content     String  @default("")
 
   title       String
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  snapshots   DocumentSnapshot[]
+  
 
-  @@index([workspaceId])
+  
   @@index([createdById])
 }
