@@ -6,6 +6,25 @@ import { ConfigModule } from '@nestjs/config'
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env'
+    }),
+
+    /**
+     * register thw users service
+     * as TCP client
+     */
+    ClientsModule.register([
+      {
+        name: 'USERS_SERVICE',
+        transport: Transport.TCP,
+        options: {
+          host: 'localhost',
+          port: 3000
+        }
+      }
+    ])
 
   ],
   controllers: [GatewayController],
