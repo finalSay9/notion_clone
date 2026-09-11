@@ -3,6 +3,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local.guard';
 import { JwtAuthGuard } from './guards/jwt.guard';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 
 
 @Controller('auth')
@@ -10,8 +11,9 @@ export class AuthController {
 
     constructor(private authService: AuthService){}
 
-  @Post('register')
-    async createUser(@Body() createUserDto: CreateUserDto) {
+
+    @MessagePattern({cmd: 'register'})
+    async createUser(@Payload() createUserDto: CreateUserDto) {
     return await this.authService.createUser(createUserDto);
    }
 
@@ -20,16 +22,15 @@ export class AuthController {
    * block the direct
    * access to the endpoint
    */ 
-  @UseGuards(LocalAuthGuard)
-  @Post('login')
-    login(@Req() req) {
-      return this.authService.login(req.user);
+    @MessagePattern({cmd: 'auth.login'})
+    login(@Payload() loginDto: any) {
+      return this.authService.login(loginDto);
     }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('me') // Endpoint: GET /auth/me
-  async getCurrentUser(@Req() req) {
-    // req.user contains { userId: '...', email: '...' } from JwtStrategy
-    return this.authService.getCurrentUser(req.user.userId);
+  
+  @MessagePattern({cmd: 'auth.get-current-user'})
+  async getCurrentUser(@Payload() payload: {userId: string} ) {
+  
+    return this.authService.getCurrentUser(payload.userId);
   }
 }
