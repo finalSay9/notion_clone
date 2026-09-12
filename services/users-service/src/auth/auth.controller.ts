@@ -17,9 +17,9 @@ export class AuthController {
    }
 
   
-    @MessagePattern({cmd: 'auth.login'})
-    login(@Payload() loginDto: any) {
-      return this.authService.login(loginDto);
+    @MessagePattern({cmd: 'login'})
+    login(@Payload() data: {email: string, password: string}) {
+      return this.authService.login(data);
     }
 
   

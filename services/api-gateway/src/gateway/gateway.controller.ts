@@ -37,4 +37,17 @@ export class GatewayController {
       this.userClient.send({cmd: 'register'}, dto)
     )
   }
+
+
+  
+  /**
+   * logging in
+   * a user
+   */
+  @Post('login')
+  async login(@Body() login: string) {
+    return firstValueFrom(
+      this.userClient.send({cmd: 'login'}, login)
+    )
+  }
 }
