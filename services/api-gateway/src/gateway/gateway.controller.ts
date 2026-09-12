@@ -14,12 +14,12 @@ import { firstValueFrom } from "rxjs";
 import { CreateUserDto } from "./dto/register.dto";
 import { GatewayService } from "./gateway.service";
 
-@Controller('gateway')
+@Controller('auth')
 export class GatewayController {
 
   constructor(
-     @Inject('USERS_SERVICE') private readonly usersService: ClientProxy,
-     private readonly gatewaySerive: GatewayService
+     @Inject('USERS_SERVICE') private readonly userClient: ClientProxy,
+     private readonly gatewayService: GatewayService
   ){}
 
   /**
@@ -27,7 +27,14 @@ export class GatewayController {
    * user
    */
   @Post('register')
-  async createUser() {
-    
+  async createUser(@Body() dto: CreateUserDto) {
+    /**
+     * now sending a message
+     * to users service
+     * and wait for response
+     */
+    return firstValueFrom(
+      this.userClient.send({cmd: 'register'}, dto)
+    )
   }
 }

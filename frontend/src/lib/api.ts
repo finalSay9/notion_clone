@@ -1,7 +1,7 @@
 // Central place for talking to the backend.
 // Point this at your api-gateway (or directly at users-service while
 // the gateway isn't proxying auth yet) via an env var.
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 
 export interface ApiError {
   message: string;
