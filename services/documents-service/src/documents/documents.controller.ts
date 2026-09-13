@@ -6,13 +6,11 @@ import { DocumentsService } from './documents.service';
 @Controller('documents')
 export class DocumentsController {
 
-    constructor(private documentService: DocumentsService){}
+    constructor(private documentsService: DocumentsService){}
 
-    @MessagePattern({cmd: 'createDocument'})
-    async createDocument(@Payload() dto: CreateDocumentDto, userId: string) {
-        return this.documentService.createDocument(dto, userId)
-
-    }
-
+    @MessagePattern({ cmd: 'create_document' })
+  async createDocument(@Payload() data: { dto: CreateDocumentDto; userId: string }) {
+  return this.documentsService.createDocument(data.dto, data.userId);
+}
 
 }

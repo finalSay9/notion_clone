@@ -75,4 +75,34 @@ export const authApi = {
     }),
 };
 
+export interface CreateDocumentPayload {
+  title: string;
+  content: string;
+  userId: string; // TEMPORARY — sent explicitly until JWT-derived userId lands
+}
+
+export interface DocumentRecord {
+  id: string;
+  title: string;
+  content: string;
+  createdById: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const documentsApi = {
+  create: (payload: CreateDocumentPayload) =>
+    request<DocumentRecord>('/auth/document', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  // NOTE: this endpoint doesn't exist on the gateway/documents-service yet —
+  // you'll need to add a GET route (e.g. GET /auth/documents?userId=...) that
+  // proxies to a `{ cmd: 'get_documents' }` message pattern, matching the
+  // create-document wiring you just built. Adjust the path below once it's built.
+  listMine: (userId: string) =>
+    request<DocumentRecord[]>(`/auth/documents?userId=${encodeURIComponent(userId)}`),
+};
+
 export { ApiRequestError };

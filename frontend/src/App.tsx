@@ -5,6 +5,8 @@ import { Landing } from './pages/Landing';
 import { Register } from './pages/Register';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
+import { Documents } from './pages/Documents';
+import { NewDocument } from './pages/NewDocument';
 
 export default function App() {
   return (
@@ -19,6 +21,22 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/documents"
+            element={
+              <ProtectedRoute>
+                <Documents />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/documents/new"
+            element={
+              <ProtectedRoute>
+                <NewDocument />
               </ProtectedRoute>
             }
           />

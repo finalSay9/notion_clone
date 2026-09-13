@@ -8,7 +8,8 @@ import {
   Post,
   UseGuards,
   Param,
-} from "@nestjs/common";
+} from "@nestjs/common"; 
+
 import { ClientProxy } from "@nestjs/microservices";
 import { first, firstValueFrom } from "rxjs";
 import { CreateUserDto } from "./dto/register.dto";
@@ -55,14 +56,21 @@ export class GatewayController {
   }
 
 
- /**
-     * create document
-     * here
-     */
-  @Post('document')
-  async createDocument(@Body() CreateDocumentDto, userId: string) {
-    return firstValueFrom(
-      this.documentClient.send({cmd: 'createDocument'}, this.createDocument, userId)
-    )
-  }
+/**
+ * create document
+ * here — TEMPORARY: userId comes from the request body directly
+ * until JWT verification is wired in. Don't ship this to real
+ * users without replacing it with a token-derived userId.
+ */
+@Post('document')
+async createDocument(@Body() body: CreateDocumentDto & { userId: string }) {
+  console.log('RAW BODY RECEIVED:', body);   // 👈 temporary debug line
+  const { userId, ...dto } = body;
+
+  return firstValueFrom(
+    this.documentClient.send({ cmd: 'create_document' }, { dto, userId }),
+  );
 }
+}
+
+

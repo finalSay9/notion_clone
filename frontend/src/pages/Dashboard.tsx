@@ -1,5 +1,6 @@
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { Button } from '../components/Button';
 
 export function Dashboard() {
   const { user, clearSession } = useAuth();
@@ -28,9 +29,11 @@ export function Dashboard() {
           Welcome, {user?.email ?? 'there'}.
         </h1>
         <p className="mt-3 max-w-md text-[15px] text-ink-soft">
-          Your documents will live here. This is a placeholder screen —
-          wire it up once the documents-service API is ready.
+          Your documents are ready.
         </p>
+        <Link to="/documents" className="mt-6 inline-block">
+          <Button>Go to your documents</Button>
+        </Link>
       </div>
     </div>
   );

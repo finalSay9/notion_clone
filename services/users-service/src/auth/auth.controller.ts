@@ -1,4 +1,4 @@
-import { Controller } from '@nestjs/common';
+import { Controller, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { AuthService } from './auth.service';
 import { MessagePattern, Payload } from '@nestjs/microservices';
@@ -16,11 +16,17 @@ export class AuthController {
     return await this.authService.createUser(createUserDto);
    }
 
-  
-    @MessagePattern({cmd: 'login'})
-    login(@Payload() data: {email: string, password: string}) {
-      return this.authService.login(data);
-    }
+  // auth.controller.ts
+@MessagePattern({cmd: 'login'})
+async login(@Payload() data: { email: string; password: string }) {
+  const user = await this.authService.validateUser(data.email, data.password);
+
+  if (!user) {
+    throw new UnauthorizedException('Invalid email or password');
+  }
+
+  return this.authService.login(user);
+}
 
   
   @MessagePattern({cmd: 'auth.get-current-user'})

@@ -4,6 +4,9 @@ import { CreateDocumentDto } from './dto/create-document.dto';
 import { ClientProxy } from '@nestjs/microservices';
 
 
+
+
+
 @Injectable()
 export class DocumentsService {
     constructor(
@@ -17,7 +20,7 @@ export class DocumentsService {
         return this.prisma.document.create({
             data: {
                 title: dto.title,
-                content: dto.title,
+                content: dto.content,
                 createdById: userId
             }
         })
