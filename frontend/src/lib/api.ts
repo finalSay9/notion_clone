@@ -106,6 +106,10 @@ export const documentsApi = {
 
   listMine: (userId: string) =>
     request<PaginatedDocuments>(`/auth/documents?userId=${encodeURIComponent(userId)}`),
+  getById: (documentId: string, userId: string) =>
+    request<DocumentRecord>(
+      `/auth/documents/${documentId}?userId=${encodeURIComponent(userId)}`,
+    ),
 };
 
 

@@ -1,8 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { ClientProxy } from '@nestjs/microservices';
 import { QueryDocumentDto } from './dto/queryDoc.dto';
+import { NotFoundError } from 'rxjs';
 
 
 
@@ -53,5 +54,26 @@ export class DocumentsService {
             data: userDocuments,
             meta: {page, limit, count: userDocuments.length}
         }
+    }
+
+    /**
+     * get document
+     * by id
+     */
+    async getDocumentById(userId: string, documentId: string) {
+        //first check if the document exist
+        const document = await this.prisma.document.findFirst({
+            where: {
+                id: documentId,
+                createdById: userId
+            }
+        })
+
+        if(!document) {
+            throw new NotFoundException('this document is not available')
+        }
+
+        return document;
+
     }
 }

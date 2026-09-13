@@ -81,6 +81,25 @@ async getDocuments(@Query() query: QueryDocumentDto & {userId: string}) {
     this.documentClient.send({cmd: 'get_documents'}, {dto,userId })
   )
 }
+
+
+@Get('documents/:id')
+async getDocumentById(
+  @Param('id') documentId: string,
+  @Query('userId') userId: string,
+) {
+  return firstValueFrom(
+    this.documentClient.send(
+      { cmd: 'get_documentById' },
+      { userId, documentId },
+    ),
+  );
+}
+
+
+
+
+
 }
 
 

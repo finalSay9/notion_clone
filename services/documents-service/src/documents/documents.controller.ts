@@ -20,4 +20,9 @@ export class DocumentsController {
     return this.documentsService.getDocuments(data.userId, data.dto)
   }
 
+  @MessagePattern({cmd: 'get_documentById'})
+  async getDocumentById(@Payload() data: {userId: string; documentId: string}) {
+    return this.documentsService.getDocumentById(data.userId, data.documentId)
+  }
+
 }
