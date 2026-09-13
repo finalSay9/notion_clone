@@ -38,5 +38,15 @@ export class DocumentsService {
         //pagination
         const page = queryDoc.page ?? 1;
         const limit = queryDoc.limit ?? 10;
+
+        //look for the documents of the user
+        const userDocuments = await this.prisma.document.findMany({
+            where: {
+                createdById: userId
+            },
+            skip: (page - 1) * limit,
+            take: limit,
+            orderBy: {createdAt: 'desc'}
+        })
     }
 }
