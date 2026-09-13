@@ -8,6 +8,7 @@ import {
   Post,
   UseGuards,
   Param,
+  Query,
 } from "@nestjs/common"; 
 
 import { ClientProxy } from "@nestjs/microservices";
@@ -15,6 +16,7 @@ import { first, firstValueFrom } from "rxjs";
 import { CreateUserDto } from "./dto/register.dto";
 import { GatewayService } from "./gateway.service";
 import { CreateDocumentDto } from "./dto/createDocument.dto";
+import { QueryDocumentDto } from "./dto/queryDoc.dto";
 
 @Controller('auth')
 export class GatewayController {
@@ -70,6 +72,14 @@ async createDocument(@Body() body: CreateDocumentDto & { userId: string }) {
   return firstValueFrom(
     this.documentClient.send({ cmd: 'create_document' }, { dto, userId }),
   );
+}
+
+@Get('documents')
+async getDocuments(@Query() query: QueryDocumentDto & {userId: string}) {
+  const {userId, ...dto} = query
+  return firstValueFrom(
+    this.documentClient.send({cmd: 'get_documents'}, {dto,userId })
+  )
 }
 }
 

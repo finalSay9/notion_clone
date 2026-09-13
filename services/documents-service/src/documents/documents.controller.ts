@@ -17,7 +17,7 @@ export class DocumentsController {
 
   @MessagePattern({cmd: 'get_documents'})
   async getDocuments(@Payload() data: {dto: QueryDocumentDto; userId: string}) {
-    return this.documentsService.getDocuments(data.dto, data.userId)
+    return this.documentsService.getDocuments(data.userId, data.dto)
   }
 
 }
