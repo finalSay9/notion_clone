@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { ClientProxy } from '@nestjs/microservices';
+import { QueryDocumentDto } from './dto/queryDoc.dto';
 
 
 
@@ -16,6 +17,10 @@ export class DocumentsService {
     ){}
 
 
+    /**
+     * creating a 
+     * document
+     */
     async createDocument(dto: CreateDocumentDto, userId: string){
         return this.prisma.document.create({
             data: {
@@ -24,5 +29,14 @@ export class DocumentsService {
                 createdById: userId
             }
         })
+    }
+
+    /**
+     * getting documents
+     */
+    async getDocuments(userId: string, queryDoc: QueryDocumentDto) {
+        //pagination
+        const page = queryDoc.page ?? 1;
+        const limit = queryDoc.limit ?? 10;
     }
 }
