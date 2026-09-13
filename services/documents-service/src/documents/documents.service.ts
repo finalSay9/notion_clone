@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { DocumentDto } from './dto/create-document.dto';
+import { CreateDocumentDto } from './dto/create-document.dto';
 import { ClientProxy } from '@nestjs/microservices';
 
 
@@ -13,7 +13,7 @@ export class DocumentsService {
     ){}
 
 
-    async createDocument(dto: DocumentDto, userId: string){
+    async createDocument(dto: CreateDocumentDto, userId: string){
         return this.prisma.document.create({
             data: {
                 title: dto.title,

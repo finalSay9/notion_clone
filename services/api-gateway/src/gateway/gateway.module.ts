@@ -25,6 +25,12 @@ import { ConfigModule } from '@nestjs/config'
           host: 'localhost',
           port: 3006
         }
+      },
+
+      {
+        name: 'DOCUMENT_SERVICE',
+        transport: Transport.TCP,
+        options: {host: 'localhost', port: 3007}
       }
     ])
 
