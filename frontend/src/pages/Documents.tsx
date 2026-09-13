@@ -22,7 +22,7 @@ export function Documents() {
     documentsApi
       .listMine(user.id)
       .then((result) => {
-        if (!cancelled) setDocs(result);
+        if (!cancelled) setDocs(result.data);
       })
       .catch((err) => {
         if (cancelled) return;
