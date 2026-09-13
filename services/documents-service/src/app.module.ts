@@ -3,9 +3,18 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DocumentsModule } from './documents/documents.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [DocumentsModule, PrismaModule],
+  imports: [
+    ConfigModule.forRoot({
+      // Makes ConfigService available everywhere without re-importing
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
+    DocumentsModule,
+    PrismaModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
