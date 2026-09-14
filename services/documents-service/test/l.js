@@ -17,7 +17,7 @@ async function bootstrap() {
     transport: Transport.TCP,
     options: {
       host: '0.0.0.0',
-      port: 3007, // <-- use whatever TCP port you actually set up before
+      port: 3012, // <-- use whatever TCP port you actually set up before
     },
   });
 
