@@ -28,10 +28,25 @@ export function Editor() {
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Load an existing document, or seed a new one from its template.
+  // Runs again whenever `id` changes — e.g. clicking a different
+  // document in the sidebar while already on the editor.
   useEffect(() => {
     if (!user) return;
 
+    // Cancel any pending debounced save from whatever document was
+    // open before this — otherwise it can fire after navigating away
+    // and overwrite the wrong document (or save blank content).
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    setError(null);
+
+    // Keep documentId in sync with the URL — this was previously only
+    // set once via useState(id), so switching between two existing
+    // documents (same route, component doesn't remount) left it
+    // pointing at the OLD document.
+    setDocumentId(id);
+
     if (isNew) {
+      setLoading(false);
       setTitle('Untitled document');
       if (editableRef.current) {
         editableRef.current.innerHTML = template.initialContent;
@@ -41,6 +56,12 @@ export function Editor() {
 
     let cancelled = false;
     setLoading(true);
+    // Clear stale content immediately so the previous document's text
+    // never lingers on screen while the new one is loading.
+    if (editableRef.current) {
+      editableRef.current.innerHTML = '';
+    }
+
     documentsApi
       .getById(id!, user.id)
       .then((doc) => {
@@ -133,22 +154,24 @@ export function Editor() {
         <EditorToolbar />
         <EditorRuler />
 
-        <div className="flex-1 overflow-y-auto py-10">
-          {loading ? (
-            <p className="text-center text-sm text-ink-soft">Loading...</p>
-          ) : error ? (
-            <p className="mx-auto max-w-md rounded-lg bg-cursor-coral/10 px-3.5 py-2.5 text-center text-sm text-cursor-coral">
+        <div className="relative flex-1 overflow-y-auto py-10">
+          {loading && (
+            <p className="absolute inset-x-0 top-4 text-center text-sm text-ink-soft">
+              Loading...
+            </p>
+          )}
+          {error && (
+            <p className="mx-auto mb-4 max-w-md rounded-lg bg-cursor-coral/10 px-3.5 py-2.5 text-center text-sm text-cursor-coral">
               {error}
             </p>
-          ) : (
-            <div
-              ref={editableRef}
-              contentEditable
-              suppressContentEditableWarning
-              onInput={scheduleSave}
-              className="mx-auto min-h-[11in] w-[8.5in] max-w-full bg-white px-[1in] py-[1in] text-[15px] leading-relaxed text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-8px_rgba(26,29,30,0.15)] outline-none"
-            />
           )}
+          <div
+            ref={editableRef}
+            contentEditable
+            suppressContentEditableWarning
+            onInput={scheduleSave}
+            className="mx-auto min-h-[11in] w-[8.5in] max-w-full bg-white px-[1in] py-[1in] text-[15px] leading-relaxed text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-8px_rgba(26,29,30,0.15)] outline-none"
+          />
         </div>
       </div>
     </div>

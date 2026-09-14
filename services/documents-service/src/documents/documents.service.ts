@@ -105,4 +105,13 @@ export class DocumentsService {
         })
             
     }
+
+    /**
+     * deleting a document
+     */
+    async deleteDocument(documentId: string, userId: string) {
+        //check if the document exist
+        
+
+    }
 }

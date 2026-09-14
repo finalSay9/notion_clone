@@ -9,7 +9,6 @@ import {
   ListOrdered,
 } from 'lucide-react';
 
-
 const FONT_FAMILIES = ['Inter', 'Fraunces', 'Georgia', 'Arial', 'Courier New'];
 const FONT_SIZES = ['1', '2', '3', '4', '5', '6', '7']; // execCommand's coarse size scale
 
