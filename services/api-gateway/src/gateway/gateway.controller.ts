@@ -9,6 +9,7 @@ import {
   UseGuards,
   Param,
   Query,
+  Patch,
 } from "@nestjs/common"; 
 
 import { ClientProxy } from "@nestjs/microservices";
@@ -17,6 +18,7 @@ import { CreateUserDto } from "./dto/register.dto";
 import { GatewayService } from "./gateway.service";
 import { CreateDocumentDto } from "./dto/createDocument.dto";
 import { QueryDocumentDto } from "./dto/queryDoc.dto";
+import { UpdateDocumentDto } from "./dto/updateDoc.dto";
 
 @Controller('auth')
 export class GatewayController {
@@ -97,6 +99,20 @@ async getDocumentById(
 }
 
 
+@Patch('documents/:id')
+async updateDocument(
+  @Body() body: UpdateDocumentDto & { userId: string },
+  @Param('id') documentId: string,
+) {
+  const { userId, ...dto } = body;
+
+  return firstValueFrom(
+    this.documentClient.send(
+      { cmd: 'update_document' },
+      { dto, documentId, userId },
+    ),
+  );
+}
 
 
 

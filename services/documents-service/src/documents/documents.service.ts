@@ -4,6 +4,7 @@ import { CreateDocumentDto } from './dto/create-document.dto';
 import { ClientProxy } from '@nestjs/microservices';
 import { QueryDocumentDto } from './dto/queryDoc.dto';
 import { NotFoundError } from 'rxjs';
+import { UpdateDocumentDto } from './dto/updateDoc.dto';
 
 
 
@@ -75,5 +76,33 @@ export class DocumentsService {
 
         return document;
 
+    }
+
+    /***
+     * update document
+     */
+    async updateDocument(updateDocDto: UpdateDocumentDto, documentId: string, userId: string) {
+        //check if the document exist
+        const document = await this.prisma.document.findFirst({
+            where: {
+                id: documentId,
+                createdById: userId,
+            }
+        })
+         if(!document) {
+                throw new NotFoundException("this document doesnt exist")
+            }
+        
+        return this.prisma.document.update({
+            where: {
+                id: documentId
+            },
+            data: {
+                title: updateDocDto.title,
+                content: updateDocDto.content,
+                createdById: userId
+            }
+        })
+            
     }
 }

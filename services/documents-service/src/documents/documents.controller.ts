@@ -3,6 +3,7 @@ import { CreateDocumentDto } from './dto/create-document.dto';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { DocumentsService } from './documents.service';
 import { QueryDocumentDto } from './dto/queryDoc.dto';
+import { UpdateDocumentDto } from './dto/updateDoc.dto';
 
 @Controller('documents')
 export class DocumentsController {
@@ -24,5 +25,11 @@ export class DocumentsController {
   async getDocumentById(@Payload() data: {userId: string; documentId: string}) {
     return this.documentsService.getDocumentById(data.userId, data.documentId)
   }
+
+  @MessagePattern({cmd: 'update_document'})
+  async updateDocument(
+    @Payload() data: {dto: UpdateDocumentDto; documentId: string; userId: string}) {
+      return this.documentsService.updateDocument(data.dto, data.documentId, data.userId)
+    }
 
 }
