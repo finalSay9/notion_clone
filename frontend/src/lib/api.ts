@@ -75,8 +75,6 @@ export const authApi = {
     }),
 };
 
-
-
 export interface CreateDocumentPayload {
   title: string;
   content: string;
@@ -97,6 +95,12 @@ export interface PaginatedDocuments {
   meta: { page: number; limit: number; count: number };
 }
 
+export interface UpdateDocumentPayload {
+  title: string;
+  content: string;
+  userId: string; // TEMPORARY — same caveat as create, until JWT-derived userId lands
+}
+
 export const documentsApi = {
   create: (payload: CreateDocumentPayload) =>
     request<DocumentRecord>('/auth/document', {
@@ -106,11 +110,21 @@ export const documentsApi = {
 
   listMine: (userId: string) =>
     request<PaginatedDocuments>(`/auth/documents?userId=${encodeURIComponent(userId)}`),
+
   getById: (documentId: string, userId: string) =>
     request<DocumentRecord>(
       `/auth/documents/${documentId}?userId=${encodeURIComponent(userId)}`,
     ),
-};
 
+  // NOTE: this calls PATCH /auth/documents/:id — you mentioned you're
+  // building the update endpoint. Once it exists on the gateway +
+  // documents-service (same shape as create/getById), this will work
+  // as-is. Adjust the HTTP method/path here if you build it differently.
+  update: (documentId: string, payload: UpdateDocumentPayload) =>
+    request<DocumentRecord>(`/auth/documents/${documentId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    }),
+};
 
 export { ApiRequestError };

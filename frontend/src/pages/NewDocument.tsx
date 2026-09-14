@@ -28,7 +28,6 @@ export function NewDocument() {
 
     setLoading(true);
     try {
-      console.log('user from context:', user);
       const doc = await documentsApi.create({ title, content, userId: user.id });
       navigate('/documents', { state: { justCreatedTitle: doc.title } });
     } catch (err) {

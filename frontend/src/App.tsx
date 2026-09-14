@@ -6,7 +6,7 @@ import { Register } from './pages/Register';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { Documents } from './pages/Documents';
-import { NewDocument } from './pages/NewDocument';
+import { Editor } from './pages/Editor';
 
 export default function App() {
   return (
@@ -36,7 +36,15 @@ export default function App() {
             path="/documents/new"
             element={
               <ProtectedRoute>
-                <NewDocument />
+                <Editor />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/documents/:id"
+            element={
+              <ProtectedRoute>
+                <Editor />
               </ProtectedRoute>
             }
           />
