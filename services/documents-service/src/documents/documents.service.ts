@@ -111,7 +111,19 @@ export class DocumentsService {
      */
     async deleteDocument(documentId: string, userId: string) {
         //check if the document exist
-        
+        const document = await this.prisma.document.findFirst({
+            where: {
+                id: documentId,
+                createdById: userId
+            }
+        })
+        if(!document) {
+            throw new NotFoundException("no document found")
+        }
+
+        return this.prisma.document.delete({
+            where: {id: documentId}
+        })
 
     }
 }

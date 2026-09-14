@@ -32,4 +32,9 @@ export class DocumentsController {
       return this.documentsService.updateDocument(data.dto, data.documentId, data.userId)
     }
 
+  @MessagePattern({ cmd: 'delete_document' })
+  async deleteDocument(@Payload() data: { userId: string; documentId: string }) {
+  return this.documentsService.deleteDocument(data.documentId, data.userId);
+  }
+
 }

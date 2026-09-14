@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Trash2 } from 'lucide-react';
 import { documentsApi, ApiRequestError, type DocumentRecord } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { templates } from '../data/templates';
@@ -59,6 +60,23 @@ export function Documents() {
     navigate('/login');
   }
 
+  async function handleDelete(e: React.MouseEvent, docId: string, docTitle: string) {
+    e.preventDefault(); // don't navigate into the document when clicking delete
+    e.stopPropagation();
+
+    if (!user) return;
+    if (!window.confirm(`Delete "${docTitle || 'Untitled'}"? This can't be undone.`)) {
+      return;
+    }
+
+    try {
+      await documentsApi.remove(docId, user.id);
+      setDocs((prev) => prev?.filter((d) => d.id !== docId) ?? prev);
+    } catch (err) {
+      setError(err instanceof ApiRequestError ? err.message : 'Could not delete the document.');
+    }
+  }
+
   return (
     <div className="min-h-screen bg-paper">
       <div className="border-b border-ink/8 bg-white px-6 py-4 sm:px-10">
@@ -106,7 +124,15 @@ export function Documents() {
             </p>
           )}
           {docs?.map((doc) => (
-            <Link key={doc.id} to={`/documents/${doc.id}`} className="group">
+            <Link key={doc.id} to={`/documents/${doc.id}`} className="group relative">
+              <button
+                onClick={(e) => handleDelete(e, doc.id, doc.title)}
+                title="Delete document"
+                aria-label="Delete document"
+                className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-md bg-white text-ink-soft opacity-0 shadow-sm transition-opacity hover:text-cursor-coral group-hover:opacity-100"
+              >
+                <Trash2 size={14} />
+              </button>
               <div className="aspect-[8.5/11] w-full overflow-hidden rounded-lg border border-ink/10 bg-white p-3 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all group-hover:-translate-y-0.5 group-hover:shadow-[0_8px_20px_-6px_rgba(26,29,30,0.18)]">
                 <div
                   className="h-full w-full origin-top-left scale-[0.3] text-ink"

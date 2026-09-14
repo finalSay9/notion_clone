@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Trash2 } from 'lucide-react';
 import { documentsApi, ApiRequestError } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { DocumentsSidebar } from '../components/DocumentsSidebar';
@@ -132,6 +133,20 @@ export function Editor() {
     saveTimeoutRef.current = setTimeout(() => save(value), 800);
   }
 
+  async function handleDelete() {
+    if (!user || !documentId) return;
+    if (!window.confirm(`Delete "${title || 'Untitled document'}"? This can't be undone.`)) {
+      return;
+    }
+
+    try {
+      await documentsApi.remove(documentId, user.id);
+      navigate('/documents');
+    } catch (err) {
+      setError(err instanceof ApiRequestError ? err.message : 'Could not delete the document.');
+    }
+  }
+
   return (
     <div className="flex h-screen bg-paper">
       <DocumentsSidebar activeDocId={documentId} />
@@ -144,10 +159,20 @@ export function Editor() {
             placeholder="Untitled document"
             className="font-display text-xl text-ink outline-none placeholder:text-ink-soft/40"
           />
-          <span className="text-xs text-ink-soft/60">
+          <span className="flex items-center gap-3 text-xs text-ink-soft/60">
             {saveState === 'saving' && 'Saving...'}
             {saveState === 'saved' && 'Saved'}
             {saveState === 'error' && 'Could not save'}
+            {documentId && (
+              <button
+                onClick={handleDelete}
+                title="Delete document"
+                aria-label="Delete document"
+                className="flex h-7 w-7 items-center justify-center rounded-md text-ink-soft transition-colors hover:bg-cursor-coral/10 hover:text-cursor-coral"
+              >
+                <Trash2 size={15} />
+              </button>
+            )}
           </span>
         </div>
 

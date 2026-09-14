@@ -125,6 +125,14 @@ export const documentsApi = {
       method: 'PATCH',
       body: JSON.stringify(payload),
     }),
+
+  // NOTE: matches the same route shape as getById (DELETE + ?userId=...).
+  // If your gateway route for delete looks different, adjust the path here.
+  remove: (documentId: string, userId: string) =>
+    request<void>(
+      `/auth/documents/${documentId}?userId=${encodeURIComponent(userId)}`,
+      { method: 'DELETE' },
+    ),
 };
 
 export { ApiRequestError };

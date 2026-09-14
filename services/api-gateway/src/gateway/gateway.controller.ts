@@ -10,6 +10,7 @@ import {
   Param,
   Query,
   Patch,
+  Delete,
 } from "@nestjs/common"; 
 
 import { ClientProxy } from "@nestjs/microservices";
@@ -113,6 +114,15 @@ async updateDocument(
     ),
   );
 }
+
+@Delete('delete/:id')
+async deleteDocument(
+  @Param('id') documentId: string,
+  @Query('userId') userId: string) {
+    return firstValueFrom(
+    this.documentClient.send(
+    {cmd: 'delete_document'},
+    {documentId, userId}))}
 
 
 
