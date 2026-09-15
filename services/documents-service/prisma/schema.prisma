@@ -8,20 +8,39 @@ datasource db {
   provider = "postgresql"
 }
 
+enum DocumentPermissionRole {
+  VIEWER
+  EDITOR
+}
+
 model Document {
   id          String   @id @default(uuid())
   createdById String
 
-  // Keep this for now as a plain-text/HTML fallback.
-  content     String   @default("")
+  content       String   @default("")
+  contentBinary Bytes?
 
-  // Persisted Yjs document state.
-  contentBinary    Bytes?
+  title String
 
-  title       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  permissions DocumentPermission[]
 
   @@index([createdById])
+}
+
+model DocumentPermission {
+  id         String                  @id @default(uuid())
+  documentId String
+  userId     String
+  role       DocumentPermissionRole
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([documentId, userId])
+  @@index([userId])
 }
