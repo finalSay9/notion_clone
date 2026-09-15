@@ -1,3 +1,4 @@
+import type { Editor } from '@tiptap/react';
 import {
   Bold,
   Italic,
@@ -7,21 +8,22 @@ import {
   AlignRight,
   List,
   ListOrdered,
+  Undo2,
+  Redo2,
 } from 'lucide-react';
 
 const FONT_FAMILIES = ['Inter', 'Fraunces', 'Georgia', 'Arial', 'Courier New'];
-const FONT_SIZES = ['1', '2', '3', '4', '5', '6', '7']; // execCommand's coarse size scale
-
-function runCommand(command: string, value?: string) {
-  document.execCommand(command, false, value);
-}
 
 function ToolbarButton({
   onClick,
+  active,
   label,
+  disabled,
   children,
 }: {
   onClick: () => void;
+  active?: boolean;
+  disabled?: boolean;
   label: string;
   children: React.ReactNode;
 }) {
@@ -30,26 +32,46 @@ function ToolbarButton({
       type="button"
       title={label}
       aria-label={label}
-      // onMouseDown + preventDefault keeps focus (and the text selection)
-      // inside the editable area instead of the toolbar stealing it.
+      disabled={disabled}
+      // preventDefault keeps focus (and the text selection) inside the
+      // editor instead of the toolbar button stealing it.
       onMouseDown={(e) => {
         e.preventDefault();
         onClick();
       }}
-      className="flex h-8 w-8 items-center justify-center rounded-md text-ink-soft transition-colors hover:bg-ink/8 hover:text-ink"
+      className={`flex h-8 w-8 items-center justify-center rounded-md transition-colors disabled:opacity-30 ${
+        active ? 'bg-indigo/10 text-indigo' : 'text-ink-soft hover:bg-ink/8 hover:text-ink'
+      }`}
     >
       {children}
     </button>
   );
 }
 
-export function EditorToolbar() {
+interface EditorToolbarProps {
+  editor: Editor | null;
+}
+
+export function EditorToolbar({ editor }: EditorToolbarProps) {
+  if (!editor) {
+    return <div className="h-[46px] border-b border-ink/8 bg-white" />;
+  }
+
   return (
     <div className="flex flex-wrap items-center gap-1 border-b border-ink/8 bg-white px-4 py-2">
+      <ToolbarButton label="Undo" onClick={() => editor.chain().focus().undo().run()}>
+        <Undo2 size={16} />
+      </ToolbarButton>
+      <ToolbarButton label="Redo" onClick={() => editor.chain().focus().redo().run()}>
+        <Redo2 size={16} />
+      </ToolbarButton>
+
+      <div className="mx-1.5 h-5 w-px bg-ink/10" />
+
       <select
         defaultValue="Inter"
         onMouseDown={(e) => e.stopPropagation()}
-        onChange={(e) => runCommand('fontName', e.target.value)}
+        onChange={(e) => editor.chain().focus().setFontFamily(e.target.value).run()}
         className="h-8 rounded-md border border-ink/12 bg-white px-2 text-sm text-ink"
       >
         {FONT_FAMILIES.map((f) => (
@@ -59,58 +81,75 @@ export function EditorToolbar() {
         ))}
       </select>
 
-      <select
-        defaultValue="3"
-        onMouseDown={(e) => e.stopPropagation()}
-        onChange={(e) => runCommand('fontSize', e.target.value)}
-        className="h-8 w-16 rounded-md border border-ink/12 bg-white px-2 text-sm text-ink"
-      >
-        {FONT_SIZES.map((s) => (
-          <option key={s} value={s}>
-            {s}
-          </option>
-        ))}
-      </select>
-
       <div className="mx-1.5 h-5 w-px bg-ink/10" />
 
-      <ToolbarButton label="Bold" onClick={() => runCommand('bold')}>
+      <ToolbarButton
+        label="Bold"
+        active={editor.isActive('bold')}
+        onClick={() => editor.chain().focus().toggleBold().run()}
+      >
         <Bold size={16} />
       </ToolbarButton>
-      <ToolbarButton label="Italic" onClick={() => runCommand('italic')}>
+      <ToolbarButton
+        label="Italic"
+        active={editor.isActive('italic')}
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+      >
         <Italic size={16} />
       </ToolbarButton>
-      <ToolbarButton label="Underline" onClick={() => runCommand('underline')}>
+      <ToolbarButton
+        label="Underline"
+        active={editor.isActive('underline')}
+        onClick={() => editor.chain().focus().toggleUnderline().run()}
+      >
         <Underline size={16} />
       </ToolbarButton>
 
       <div className="mx-1.5 h-5 w-px bg-ink/10" />
 
-      <ToolbarButton label="Align left" onClick={() => runCommand('justifyLeft')}>
+      <ToolbarButton
+        label="Align left"
+        active={editor.isActive({ textAlign: 'left' })}
+        onClick={() => editor.chain().focus().setTextAlign('left').run()}
+      >
         <AlignLeft size={16} />
       </ToolbarButton>
-      <ToolbarButton label="Align center" onClick={() => runCommand('justifyCenter')}>
+      <ToolbarButton
+        label="Align center"
+        active={editor.isActive({ textAlign: 'center' })}
+        onClick={() => editor.chain().focus().setTextAlign('center').run()}
+      >
         <AlignCenter size={16} />
       </ToolbarButton>
-      <ToolbarButton label="Align right" onClick={() => runCommand('justifyRight')}>
+      <ToolbarButton
+        label="Align right"
+        active={editor.isActive({ textAlign: 'right' })}
+        onClick={() => editor.chain().focus().setTextAlign('right').run()}
+      >
         <AlignRight size={16} />
       </ToolbarButton>
 
       <div className="mx-1.5 h-5 w-px bg-ink/10" />
 
-      <ToolbarButton label="Bulleted list" onClick={() => runCommand('insertUnorderedList')}>
+      <ToolbarButton
+        label="Bulleted list"
+        active={editor.isActive('bulletList')}
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
+      >
         <List size={16} />
       </ToolbarButton>
-      <ToolbarButton label="Numbered list" onClick={() => runCommand('insertOrderedList')}>
+      <ToolbarButton
+        label="Numbered list"
+        active={editor.isActive('orderedList')}
+        onClick={() => editor.chain().focus().toggleOrderedList().run()}
+      >
         <ListOrdered size={16} />
       </ToolbarButton>
     </div>
   );
 }
 
-// A purely visual ruler, like Google Docs' — not functionally tied to
-// margins yet. It grounds the page in the "familiar document editor"
-// feel; wiring it to real margin controls is a later, separate task.
+// Same purely visual ruler as before — unrelated to Tiptap/Yjs.
 export function EditorRuler() {
   const ticks = Array.from({ length: 17 }, (_, i) => i);
   return (

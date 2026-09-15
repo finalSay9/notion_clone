@@ -1,8 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import { WebSocketServer } from 'ws';
-import { Server as HocuspocusServer } from '@hocuspocus/server';
+import { Hocuspocus, type WebSocketLike } from '@hocuspocus/server';
+import crossws from 'crossws/adapters/node';
 import { AppModule } from './app.module';
 import { PrismaService } from './prisma/prisma.service';
 
@@ -17,14 +17,16 @@ async function bootstrap() {
     transport: Transport.TCP,
     options: {
       host: '0.0.0.0',
-      port: 3007, // <-- use whatever TCP port you actually set up before
+      port: 3007, // <-- your actual TCP port, confirm this matches what you already have
     },
   });
 
   const prisma = app.get(PrismaService);
 
-  // ---- Hocuspocus, configured but not listening on its own port ----
-  const hocuspocus = HocuspocusServer.configure({
+  // ---- Hocuspocus v4: instantiate directly, do NOT call .listen() ----
+  // (v4 no longer has Server.configure() — Hocuspocus is now a plain
+  // class you construct, and you hand it connections yourself.)
+  const hocuspocus = new Hocuspocus({
     async onLoadDocument({ documentName, document }) {
       const record = await prisma.document.findUnique({
         where: { id: documentName },
@@ -50,16 +52,43 @@ async function bootstrap() {
     },
   });
 
-  const wss = new WebSocketServer({ noServer: true });
-  const httpServer = app.getHttpServer();
+  // ---- crossws: the official v4 way to bridge Node's raw 'upgrade'
+  // event to Hocuspocus. crossws normalizes the request/socket across
+  // runtimes (Node, Bun, Deno, Workers) — this is the officially
+  // documented pattern for Express/Nest as of Hocuspocus v4.
+  const ws = crossws({
+    hooks: {
+      open(peer) {
+        const clientConnection = hocuspocus.handleConnection(
+          peer.websocket as unknown as WebSocketLike,
+          peer.request as Request,
+        );
+        // Stash the connection on the peer so the other hooks below
+        // can find it again for this same socket.
+        (peer as any)._hocuspocus = clientConnection;
+      },
+      message(peer, message) {
+        (peer as any)._hocuspocus?.handleMessage(message.uint8Array());
+      },
+      close(peer, event) {
+        (peer as any)._hocuspocus?.handleClose({
+          code: event.code,
+          reason: event.reason,
+        });
+      },
+      error(peer, error) {
+        console.error('Collaboration WebSocket error:', error);
+      },
+    },
+  });
 
+  // Get Nest's actual underlying Node http.Server and hand raw
+  // 'upgrade' events to crossws. Nest's own HTTP routing is
+  // completely unaffected — this only fires for WebSocket upgrade
+  // requests, which normal HTTP requests never trigger.
+  const httpServer = app.getHttpServer();
   httpServer.on('upgrade', (request: any, socket: any, head: any) => {
-    const url = new URL(request.url, `http://${request.headers.host}`);
-    if (url.pathname === '/collaboration') {
-      wss.handleUpgrade(request, socket, head, (ws) => {
-        hocuspocus.handleConnection(ws, request);
-      });
-    }
+    ws.handleUpgrade(request, socket, head);
   });
 
   await app.startAllMicroservices();
