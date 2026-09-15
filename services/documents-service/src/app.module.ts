@@ -4,6 +4,8 @@ import { AppService } from './app.service';
 import { DocumentsModule } from './documents/documents.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+
 
 @Module({
   imports: [
@@ -12,6 +14,19 @@ import { ConfigModule } from '@nestjs/config';
       isGlobal: true,
       envFilePath: '.env',
     }),
+
+    ClientsModule.register([
+      {
+        name: "USERS_SERVICE",
+        transport: Transport.TCP,
+        options:{
+          host: 'localhost',
+          port: 3008
+        }
+      }
+    ]),
+
+
     DocumentsModule,
     PrismaModule,
   ],
