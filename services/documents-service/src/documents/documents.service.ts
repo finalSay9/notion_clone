@@ -1,9 +1,9 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { ClientProxy } from '@nestjs/microservices';
 import { QueryDocumentDto } from './dto/queryDoc.dto';
-import { NotFoundError } from 'rxjs';
+import { firstValueFrom, NotFoundError } from 'rxjs';
 import { UpdateDocumentDto } from './dto/updateDoc.dto';
 
 
@@ -123,6 +123,51 @@ export class DocumentsService {
 
         return this.prisma.document.delete({
             where: {id: documentId}
+        })
+
+    }
+
+    /**
+     * invite user to document
+     */
+    async inviteUserToDocument(documentId: string, userId: string, email: string) {
+        const user = await firstValueFrom(
+            this.userClient.send('get_user_by_email', {email})
+        );
+        if(!user) {
+            throw new NotFoundException("no user with that email exist")
+        }
+       
+        //check if document exist
+        const document = await this.prisma.document.findFirst({
+            where: {
+                id: documentId,
+                createdById: userId
+            }
+        })
+        if(!document) {
+            throw new NotFoundException("this document doesnt exist")
+
+        }
+
+        //check if the user already invited
+        const existingInvitation = await this.prisma.documentPermission.findFirst({
+            where: {
+                documentId: documentId,
+                userId: user.id
+            }
+        })
+        if(existingInvitation) {
+            throw new BadRequestException("this user is already invited to this document")
+        }
+
+        //create invitation
+        return this.prisma.documentPermission.create({
+            data: {
+                documentId: documentId,
+                userId: user.id,
+                inviId: userId
+            }
         })
 
     }

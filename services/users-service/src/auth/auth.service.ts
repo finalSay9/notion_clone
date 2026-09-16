@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 
@@ -123,6 +124,22 @@ export class AuthService {
 
     if (!user) {
       throw new UnauthorizedException('User no longer exists');
+    }
+
+    return user;
+  }
+
+  /**
+   * find user by 
+   * email
+   */
+  async findUserByEmail(email: string) {
+    //check if youer exist
+    const user = await this.prisma.user.findUnique({
+      where: {email: email}
+    })
+    if(!user) {
+      throw new NotFoundException("no user with that email exist")
     }
 
     return user;
