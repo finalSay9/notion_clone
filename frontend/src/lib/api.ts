@@ -101,6 +101,21 @@ export interface UpdateDocumentPayload {
   userId: string; // TEMPORARY — same caveat as create, until JWT-derived userId lands
 }
 
+export interface InviteUserPayload {
+  email: string;
+  role?: 'VIEWER' | 'EDITOR';
+  userId: string; // TEMPORARY — same caveat as create/update, until JWT-derived userId lands
+}
+
+export interface DocumentPermissionRecord {
+  id: string;
+  documentId: string;
+  userId: string;
+  role: 'VIEWER' | 'EDITOR';
+  createdAt: string;
+  updatedAt: string;
+}
+
 export const documentsApi = {
   create: (payload: CreateDocumentPayload) =>
     request<DocumentRecord>('/auth/document', {
@@ -133,6 +148,12 @@ export const documentsApi = {
       `/auth/documents/${documentId}?userId=${encodeURIComponent(userId)}`,
       { method: 'DELETE' },
     ),
+
+  invite: (documentId: string, payload: InviteUserPayload) =>
+    request<DocumentPermissionRecord>(`/auth/documents/${documentId}/invite`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
 };
 
 export { ApiRequestError };

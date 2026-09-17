@@ -20,6 +20,7 @@ import { GatewayService } from "./gateway.service";
 import { CreateDocumentDto } from "./dto/createDocument.dto";
 import { QueryDocumentDto } from "./dto/queryDoc.dto";
 import { UpdateDocumentDto } from "./dto/updateDoc.dto";
+import { InviteUserDto } from "./dto/invite-user.dto";
 
 @Controller('auth')
 export class GatewayController {
@@ -124,6 +125,27 @@ async deleteDocument(
     this.documentClient.send(
       { cmd: 'delete_document' },
       { documentId, userId },
+    ),
+  );
+}
+
+
+@Post('documents/:id/invite')
+async inviteUserToDocument(
+  @Param('id') documentId: string,
+  @Body() body: InviteUserDto & { userId: string },
+) {
+  const { userId, ...dto } = body;
+
+  return firstValueFrom(
+    this.documentClient.send(
+      { cmd: 'invite_user_to_document' },
+      {
+        documentId,
+        inviterId: userId,
+        email: dto.email,
+        role: dto.role ?? 'VIEWER', // default when the client omits it
+      },
     ),
   );
 }

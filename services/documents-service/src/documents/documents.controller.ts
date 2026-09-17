@@ -4,6 +4,7 @@ import { MessagePattern, Payload } from '@nestjs/microservices';
 import { DocumentsService } from './documents.service';
 import { QueryDocumentDto } from './dto/queryDoc.dto';
 import { UpdateDocumentDto } from './dto/updateDoc.dto';
+import { DocumentPermissionRole } from 'generated/prisma/enums';
 
 @Controller('documents')
 export class DocumentsController {
@@ -36,5 +37,23 @@ export class DocumentsController {
   async deleteDocument(@Payload() data: { userId: string; documentId: string }) {
   return this.documentsService.deleteDocument(data.documentId, data.userId);
   }
+
+  @MessagePattern({ cmd: 'invite_user_to_document' })
+  async inviteUserToDocument(
+  @Payload()
+  data: {
+    documentId: string;
+    inviterId: string;
+    email: string;
+    role: DocumentPermissionRole;
+  },
+) {
+  return this.documentsService.inviteUserToDocument(
+    data.documentId,
+    data.inviterId,
+    data.email,
+    data.role,
+  );
+}
 
 }

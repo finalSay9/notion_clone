@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Trash2 } from 'lucide-react';
+import { Trash2, UserPlus } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { TextStyle } from '@tiptap/extension-text-style';
@@ -15,6 +15,7 @@ import { useAuth } from '../context/AuthContext';
 import { DocumentsSidebar } from '../components/DocumentsSidebar';
 import { EditorToolbar, EditorRuler } from '../components/EditorToolbar';
 import { CollaboratorAvatars } from '../components/CollaboratorAvatars';
+import { ShareDialog } from '../components/ShareDialog';
 import { colorForUser } from '../lib/collabColors';
 import { templates } from '../data/templates';
 
@@ -43,6 +44,7 @@ export function Editor() {
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [collaborators, setCollaborators] = useState<CollabUser[]>([]);
   const [isSynced, setIsSynced] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   const [collab, setCollab] = useState<{ ydoc: Y.Doc; provider: HocuspocusProvider } | null>(
     null,
@@ -295,6 +297,13 @@ export function Editor() {
           />
           <div className="flex items-center gap-4">
             <CollaboratorAvatars users={collaborators} />
+            <button
+              onClick={() => setShareOpen(true)}
+              className="flex items-center gap-1.5 rounded-lg border border-ink/12 px-3 py-1.5 text-sm font-medium text-ink-soft transition-colors hover:bg-ink/5 hover:text-ink"
+            >
+              <UserPlus size={14} />
+              Share
+            </button>
             <span className="flex items-center gap-1.5 text-xs text-ink-soft/60">
               <span
                 className={`h-1.5 w-1.5 rounded-full ${
@@ -318,6 +327,10 @@ export function Editor() {
             </button>
           </div>
         </div>
+
+        {shareOpen && id && (
+          <ShareDialog documentId={id} onClose={() => setShareOpen(false)} />
+        )}
 
         <EditorToolbar editor={editor} />
         <EditorRuler />
