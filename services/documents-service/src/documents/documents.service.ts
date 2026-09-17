@@ -5,6 +5,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import { QueryDocumentDto } from './dto/queryDoc.dto';
 import { firstValueFrom, NotFoundError } from 'rxjs';
 import { UpdateDocumentDto } from './dto/updateDoc.dto';
+import { DocumentPermissionRole } from 'generated/prisma/enums';
 
 
 
@@ -127,48 +128,86 @@ export class DocumentsService {
 
     }
 
-    /**
-     * invite user to document
-     */
-    async inviteUserToDocument(documentId: string, userId: string, email: string) {
-        const user = await firstValueFrom(
-            this.userClient.send('get_user_by_email', {email})
-        );
-        if(!user) {
-            throw new NotFoundException("no user with that email exist")
-        }
-       
-        //check if document exist
-        const document = await this.prisma.document.findFirst({
-            where: {
-                id: documentId,
-                createdById: userId
-            }
-        })
-        if(!document) {
-            throw new NotFoundException("this document doesnt exist")
+   
+   /**
+    * inviting a user to
+    * collaborate a document
+    */
+   async inviteUserToDocument(
+  documentId: string,
+  inviterId: string,
+  email: string,
+  role: DocumentPermissionRole,
+) {
+  /**
+   * 1. First verify that the requester
+   * actually owns the document.
+   */
+  const document = await this.prisma.document.findFirst({
+    where: {
+      id: documentId,
+      createdById: inviterId,
+    },
+  });
 
-        }
+  if (!document) {
+    throw new NotFoundException(
+      'Document not found or you do not have permission to invite users',
+    );
+  }
 
-        //check if the user already invited
-        const existingInvitation = await this.prisma.documentPermission.findFirst({
-            where: {
-                documentId: documentId,
-                userId: user.id
-            }
-        })
-        if(existingInvitation) {
-            throw new BadRequestException("this user is already invited to this document")
-        }
+  /**
+   * 2. Now that we know the requester is allowed
+   * to invite users, ask the Users Service to
+   * find the invitee.
+   */
+  const user = await firstValueFrom(
+    this.userClient.send(
+      { cmd: 'get_user_by_email' },
+      {
+        email: email.trim().toLowerCase(),
+      },
+    ),
+  );
 
-        //create invitation
-        return this.prisma.documentPermission.create({
-            data: {
-                documentId: documentId,
-                userId: user.id,
-                inviId: userId
-            }
-        })
+  /**
+   * 3. Don't allow the owner to invite themselves.
+   */
+  if (user.id === inviterId) {
+    throw new BadRequestException(
+      'You cannot invite yourself to this document',
+    );
+  }
 
-    }
+  /**
+   * 4. Check whether this user already has
+   * permission for this document.
+   */
+  const existingPermission =
+    await this.prisma.documentPermission.findUnique({
+      where: {
+        documentId_userId: {
+          documentId,
+          userId: user.id,
+        },
+      },
+    });
+
+  if (existingPermission) {
+    throw new BadRequestException(
+      'This user already has access to this document',
+    );
+  }
+
+  /**
+   * 5. Actually create the permission.
+   */
+  return this.prisma.documentPermission.create({
+    data: {
+      documentId,
+      userId: user.id,
+      role,
+    },
+  });
+}
 }
