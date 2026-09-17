@@ -7,6 +7,7 @@ import { Hocuspocus, type WebSocketLike } from '@hocuspocus/server';
 import crossws from 'crossws/adapters/node';
 import { AppModule } from './app.module';
 import { PrismaService } from './prisma/prisma.service';
+import { DocumentPermissionRole } from 'generated/prisma/enums';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -49,9 +50,44 @@ async function bootstrap() {
       });
     },
 
-    async onAuthenticate() {
-      return {}; // TEMPORARY — no real auth check yet
+    async onAuthenticate(data) {
+  const { token, documentName, connectionConfig } = data;
+  const userId = token;
+
+  // TEMPORARY — same gap as the REST layer: userId is trusted
+  // directly rather than derived from a verified JWT. Close this
+  // the same way, whenever that work happens.
+  if (!userId) {
+    throw new Error('Not authorized');
+  }
+
+  const document = await prisma.document.findFirst({
+    where: {
+      id: documentName,
+      OR: [
+        { createdById: userId },
+        { permissions: { some: { userId } } },
+      ],
     },
+    include: {
+      permissions: { where: { userId } },
+    },
+  });
+
+  if (!document) {
+    throw new Error('Not authorized to access this document');
+  }
+
+  const isCreator = document.createdById === userId;
+  const permission = document.permissions[0];
+
+  // A VIEWER can watch the live session but not edit it.
+  if (!isCreator && permission?.role === DocumentPermissionRole.VIEWER) {
+    connectionConfig.readOnly = true;
+  }
+
+  return { userId };
+},
   });
 
   // ---- crossws: the official v4 way to bridge Node's raw 'upgrade'

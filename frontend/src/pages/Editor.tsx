@@ -124,7 +124,7 @@ export function Editor() {
       url: COLLAB_WS_URL,
       name: id,
       document: ydoc,
-      token: accessToken ?? '',
+      token: user?.id ??  '',
     });
 
     setCollab({ ydoc, provider });
